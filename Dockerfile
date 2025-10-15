@@ -49,6 +49,7 @@ ENV NODE_ENV=development
 ENV PORT=3000
 
 COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 
 EXPOSE 3000
 
