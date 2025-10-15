@@ -1,0 +1,29 @@
+services:
+  nextjs-prod:
+    container_name: nextjs-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  nextjs-dev:
+    container_name: nextjs-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+      - /app/.pnpm-store
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
