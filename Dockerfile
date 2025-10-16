@@ -4,7 +4,7 @@ RUN corepack enable pnpm
 FROM base AS deps
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm i --frozen-lockfile
 
 FROM base AS builder
@@ -16,8 +16,10 @@ COPY . .
 
 RUN pnpm run build
 
+RUN ls -R .next
+
 # Production image, copy all the files and run next
-FROM base AS runner
+FROM base AS prod
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
@@ -29,7 +31,8 @@ COPY --from=builder /app/public ./public
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-RUN chmod -R a-w /app/.next/standalone /app/.next/static
+
+RUN if [ -d "/app/.next" ]; then chmod -R a-w /app/.next; fi
 
 USER nextjs
 
