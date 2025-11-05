@@ -1,13 +1,5 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Setup
-
-You will need to perform prisma migrations before running the application, to do so:
-
-```bash
-npx prisma migrate dev
-```
-
 ## Getting Started
 
 First, run the development server:
@@ -19,6 +11,27 @@ pnpm dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+### Development
+
+#### Create a migration
+
+To perform a migration with prisma you must do the following commands:
+
+```bash
+docker compose up nextjs-dev -d
+docker compose exec nextjs-dev pnpm prisma migrate dev
+```
+
+### Database content
+
+To observe the content of the database, you can use prisma studio by executing:
+
+```bash
+docker compose  exec nextjs-dev pnpm prisma studio
+```
+
+You can access it with your browser on [http://localhost:5555](http://localhost:5555).
 
 ## Learn More
 
