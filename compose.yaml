@@ -1,4 +1,24 @@
 services:
+  postgres:
+    container_name: postgres
+    image: postgres:18-alpine@sha256:48c8ad3a7284b82be4482a52076d47d879fd6fb084a1cbfccbd551f9331b0e40
+    volumes:
+      - pg-data:/data/postgres
+    networks:
+      - database
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_DATA=/data/postgres
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d ${POSTGRES_DB}" ]
+      start_period: 3s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   nextjs-prod:
     container_name: nextjs-prod
     build:
@@ -7,9 +27,14 @@ services:
       target: prod
     ports:
       - "3000:3000"
+    networks:
+      - database
     environment:
       - NODE_ENV=production
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   nextjs-dev:
     container_name: nextjs-dev
@@ -24,6 +49,17 @@ services:
       - /app/node_modules
       - /app/.next
       - /app/.pnpm-store
+    networks:
+      - database
     environment:
       - NODE_ENV=development
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  database:
+
+volumes:
+  pg-data:
