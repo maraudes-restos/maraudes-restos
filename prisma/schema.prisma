@@ -10,3 +10,91 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Trip {
+  id              Int        @id @default(autoincrement())
+  driverFirstname String
+  driverLastname  String
+  driverPhone     String
+  car             Car        @relation(fields: [carId], references: [id])
+  carId           Int
+  zones           TripZone[]
+  date            DateTime   @default(now()) //? What about morning ones?
+  createdAt       DateTime   @default(now())
+}
+
+model TripZone {
+  trip   Trip @relation(fields: [tripId], references: [id])
+  tripId Int
+  zone   Zone @relation(fields: [zoneId], references: [id])
+  zoneId Int
+
+  @@id([tripId, zoneId])
+}
+
+model Car {
+  id           Int         @id @default(autoincrement())
+  name         String      @unique
+  licensePlate String      @unique
+  trips        Trip[]
+  status       CarStatus[]
+  createdAt    DateTime    @default(now())
+}
+
+model CarStatus {
+  id          Int           @id @default(autoincrement())
+  car         Car           @relation(fields: [carId], references: [id])
+  carId       Int
+  type        CarStatusType
+  comment     String
+  effectiveAt DateTime      @default(now())
+  createdAt   DateTime      @default(now())
+}
+
+enum CarStatusType {
+  OPERATIONNAL
+  PARTIALLY
+  OUT_OF_ORDER
+  BOOKED
+  DEAD
+}
+
+model Zone {
+  id      Int         @id @default(autoincrement())
+  name    String      @unique
+  comment String
+  trips   TripZone[]
+  events  ZoneEvent[]
+}
+
+model ZoneEvent {
+  zone    Zone  @relation(fields: [zoneId], references: [id])
+  zoneId  Int
+  event   Event @relation(fields: [eventId], references: [id])
+  eventId Int
+
+  @@id([zoneId, eventId])
+}
+
+model Event {
+  id             Int         @id @default(autoincrement())
+  zones          ZoneEvent[]
+  reason         String
+  type           EventType
+  effective_days String
+  active         Boolean     @default(true)
+  effictiveAt    DateTime    @default(now())
+  createdAt      DateTime    @default(now())
+}
+
+enum EventType {
+  DEFAULT
+  AVOID
+  FORBIDDEN
+  DEAD
+}
+
+model Setting {
+  name  String @id
+  value String
+}
