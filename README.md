@@ -14,6 +14,20 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 ### Development
 
+#### Seeding database
+
+To seed the database you can  run:
+
+```bash
+docker compose exec nextjs-dev pnpm prisma db seed
+```
+
+Or if you want to reset the database with seeding:
+
+```bash
+docker compose exec nextjs-dev pnpm prisma migrate reset
+```
+
 #### Create a migration
 
 To perform a migration with prisma you must do the following commands:
