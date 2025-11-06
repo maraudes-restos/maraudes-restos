@@ -58,4 +58,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "pnpm prisma db push && pnpm run dev"]
+CMD ["sh", "-c", "pnpm prisma migrate dev && pnpm run dev"]
