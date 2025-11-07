@@ -2,47 +2,74 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, start the development environment:
 
 ```bash
-pnpm dev
+make dev
+# or simply
+make
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+### Available Commands
+
+To see all available Makefile commands:
+
+```bash
+make help
+```
+
 ### Development
 
-#### Seeding database
-
-To seed the database you can  run:
+#### Docker Commands
 
 ```bash
-docker compose exec nextjs-dev pnpm prisma db seed
+make dev          # Start development environment
+make prod         # Start production environment
+make down         # Stop all containers
+make down-volumes # Stop containers and remove volumes
+make restart      # Restart all containers
+make logs         # View all container logs
+make logs SERVICE=nextjs-dev  # View logs for specific service
+make build        # Build all containers
+make build SERVICE=nextjs-dev # Build specific container
 ```
 
-Or if you want to reset the database with seeding:
+#### Database Commands
+
+##### Create a migration
+
+To perform a migration with Prisma:
 
 ```bash
-docker compose exec nextjs-dev pnpm prisma migrate reset
+make db-migrate
 ```
 
-#### Create a migration
+##### Seeding database
 
-To perform a migration with prisma you must do the following commands:
+To seed the database:
 
 ```bash
-docker compose up nextjs-dev -d
-docker compose exec nextjs-dev pnpm prisma migrate dev
+make db-seed
 ```
 
-### Database content
+##### Reset database
 
-To observe the content of the database, you can use prisma studio by executing:
+To reset the database with seeding:
 
 ```bash
-docker compose  exec nextjs-dev pnpm prisma studio
+make db-reset
+```
+
+##### Database Studio
+
+To observe the content of the database, you can use Prisma Studio:
+
+```bash
+make db-studio
 ```
 
 You can access it with your browser on [http://localhost:5555](http://localhost:5555).
