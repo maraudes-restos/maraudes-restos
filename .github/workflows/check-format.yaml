@@ -1,0 +1,38 @@
+name: Check-Format
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+
+    env:
+      CACHE_DIR: ${{ github.workspace }}/clang-format
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Formatter
+        uses: actions/cache@v4
+        id: formatter-cache
+        with:
+          key: clang-format-${{ runner.os }}
+          path: ${{ env.CACHE_DIR }}
+
+      - name: Install Formatter
+        if: ${{ steps.formatter-cache.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p ${{ env.PIPX_HOME }} ${{ env.PIPX_BIN_DIR }}
+          ./tools/format.sh --install
+
+      - name: Make
+        run: |
+          make check-format ARGS="--override ${{ env.PIPX_BIN_DIR }}/clang-format"
