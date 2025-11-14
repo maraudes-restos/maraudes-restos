@@ -1,101 +1,132 @@
 "use client";
 
-import React, { useState, ViewTransitionPseudoElement } from 'react';
+import React, { Component, isValidElement, useState } from 'react';
+import CarSelectionSection from './car_selection';
+import ArrondissementSelectionSection from './arrondissement_selection';
+import DriverInformationSection from './driver_info';
+import RecapSection from './recap';
 import styles from './marauder.module.css'
 
+interface StepProps {
+	goBack?: () => void;
+	goNext?: () => void;
+	isValid?: boolean;
+}
+
+function ButtonGoNext( { goNext, isValid }: StepProps) {
+	return (
+		<div>
+			<button
+				type="button"
+				onClick={goNext}
+				className={`px-4 py-2 ${isValid ? 'bg-blue-500' : 'bg-zinc-400'} text-white rounded-md`}
+				disabled={!isValid}
+			>
+				Continuer
+			</button>
+		</div>
+	);
+}
+
+function ButtonGoBack( { goBack }: StepProps) {
+	return (
+		<div>
+			<button
+				type="button"
+				onClick={goBack}
+				className="px-4 py-2 bg-slate-400 border-4 border-sky-950 text-sky-900 rounded-md"
+			>
+				Retour
+			</button>
+		</div>
+	);
+}
+
+export type TripData = {
+	arrondissement: string;
+	firstName: string;
+	lastName: string;
+	phoneNumber: string;
+	carId: string;
+}
+
+export type TripDataProp = {
+	tripData: TripData;
+	setTripData?: React.Dispatch<React.SetStateAction<TripData>>;
+}
+
 export default function Home() {
-  return (
-    <div className='h-screen flex flex-col items-center justify-center'>
-      <CarSelectionRadio />
-  </div>
-  );
-}
+	
+	const [currentStep, setCurrentStep] = useState(1);
+	const [tripData, setTripData] = useState<TripData>({
+		arrondissement: "",
+		firstName: "",
+		lastName: "",
+		phoneNumber: "",
+		carId: "",
+	})
 
-interface VoitureProps {
-  id: string;
-  name: string;
-  price: string;
-  statusComment: string;
-  selected: boolean;
-  onSelect: (id: string) => void;
-}
+	const goNext = () => {
+		setCurrentStep((prevStep) => prevStep + 1);
+	};
+	
+	const goBack = () => {
+		setCurrentStep((prevStep) => prevStep - 1);
+	};
 
-export function Voiture({
-  id,
-  name,
-  price,
-  statusComment,
-  selected,
-  onSelect,
-}: VoitureProps) {
-  return (
-      <div>
-        <input
-          id={id}
-          type="radio"
-          name="plan"
-          checked={selected}
-          onChange={() => onSelect(id)}
-          className={`hidden ${styles.radioInput}`}
-        />
-        <label
-          htmlFor={id}
-          className={`grid grid-cols-3 p-4 border-2 border-gray-400 rounded-md cursor-pointer transition ${styles.radioLabel}`}
-        >
-          <div className='col-span-1 flex flex-col'>
-            <span className="text-xl font-bold mt-2">{name}</span>
-            <span className="text-xs font-semibold uppercase">{price}</span>
-          </div>
-          <div className='col-span-2 flex items-center justify-center'>
-            <span className="text-sm">{statusComment}</span>
-          </div>
-        </label>
-      </div>
-  );
-}
+	const isValidStep = () => {
+	switch (currentStep) {
+		case 1:
+			return tripData.arrondissement !== "";
+		case 2:
+			return tripData.carId !== "";
+		case 3:
+			return tripData.firstName !== "" && tripData.lastName !== "" && tripData.phoneNumber !== "";
+		case 4:
+			return true;
+		default:
+			return false;
+	}
+	};
 
-interface PlanOption {
-  id: string;
-  name: string;
-  status: string;
-  statusComment: string;
-}
+	const steps = [
+		{ id: 1, component: <ArrondissementSelectionSection tripData={tripData} setTripData={setTripData} /> },
+		{ id: 2, component: <CarSelectionSection tripData={tripData} setTripData={setTripData} /> },
+		{ id: 3, component: <DriverInformationSection tripData={tripData} setTripData={setTripData} /> },
+		{ id: 4, component: <RecapSection tripData={tripData} /> }
+	];
 
-const plans: PlanOption[] = [
-  { id: "Rifter", name: "Rifter", status: "Available", statusComment: "Fonctionnel" },
-  { id: "Kangoo-894", name: "Kangoo 894", status: "Booked", statusComment: "Reserve pour Festival" },
-  { id: "Kangoo-691", name: "Kangoo 691", status: "Damaged", statusComment: "Fenetre cassee" },
-];
+	const currentComponent = steps.find(step => step.id === currentStep)?.component;
+	const isValid = isValidStep();
 
-export function CarSelectionRadio() {
-  const [selected, setSelected] = useState<string>("");
+	return (
+		<div className='h-screen flex flex-col items-center justify-center'>
 
-  return (
-    <div className='flex flex-col items-center justify-center'>
-      <legend className='justify-self-center self-center text-xl font-semibold underline mb-4'>Choisissez une Voiture</legend>
-      <form className="grid gap-4 max-w-screen-sm max-h-80 overflow-auto">
-        {plans.map((plan) => (
-          <Voiture
-            key={plan.id}
-            id={plan.id}
-            name={plan.name}
-            price={plan.status}
-            statusComment={plan.statusComment}
-            selected={selected === plan.id}
-            onSelect={setSelected}
-          />
-        ))}
-      </form>
-      <ConfirmButton onClick={() => alert('Confirmed!')} />
-    </div>
-  );
+			{currentComponent}
+
+			<div className="mt-6 w-4/5 flex">
+				{currentStep > 1 && 
+				<span className="justify-start">
+					<ButtonGoBack goBack={goBack}/> 
+				</span>
+				} { }
+
+				{currentStep < steps.length && 
+				<span className="ml-auto justify-end">
+					<ButtonGoNext goNext={goNext} isValid={isValid}/>
+				</span>
+				} { }
+			</div>
+
+		</div>
+	);
 }
 
 type ConfirmButtonProps = {
-  onClick: () => void;
+	onClick: () => void;
 }
 export function ConfirmButton({onClick} : ConfirmButtonProps) {
-  return (
-    <button onClick={onClick} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-4'>Confirmer</button>
-  );
+	return (
+		<button onClick={onClick} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-4'>Confirmer</button>
+	);
 }
