@@ -2,6 +2,8 @@ services:
   postgres:
     container_name: postgres
     image: docker.io/postgres:18-alpine@sha256:48c8ad3a7284b82be4482a52076d47d879fd6fb084a1cbfccbd551f9331b0e40
+    ports:
+      - "5432:5432"  # Exposed for local development - remove in production
     volumes:
       - pg-data:/data/postgres
     networks:
@@ -19,7 +21,7 @@ services:
       timeout: 10s
       retries: 5
 
-  nextjs-prod:
+  nextjs:
     container_name: nextjs-prod
     build:
       context: .
@@ -31,30 +33,6 @@ services:
       - database
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  nextjs-dev:
-    container_name: nextjs-dev
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: dev
-    ports:
-      - "3000:3000"
-      - "5555:5555"
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
-      - /app/.pnpm-store
-    networks:
-      - database
-    environment:
-      - NODE_ENV=development
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
     restart: unless-stopped
     depends_on:
