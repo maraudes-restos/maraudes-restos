@@ -43,19 +43,3 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["sh", "-c",  "pnpx prisma migrate deploy && node server.js"]
-
-# Development image
-FROM base AS dev
-
-WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV HOSTNAME="0.0.0.0"
-ENV NODE_ENV=development
-ENV PORT=3000
-
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-
-EXPOSE 3000
-
-CMD ["sh", "-c", "pnpm prisma migrate dev && pnpm run dev"]

@@ -1,4 +1,26 @@
-.PHONY: all help prod dev down down-volumes restart logs build db-migrate db-seed db-reset db-studio
+# Detect package manager (prioritize pnpm over npm)
+PKG_MANAGER := $(shell command -v pnpm 2> /dev/null)
+ifndef PKG_MANAGER
+	PKG_MANAGER := $(shell command -v npm 2> /dev/null)
+endif
+ifndef PKG_MANAGER
+	$(error No package manager found. Please install pnpm or npm)
+endif
+
+# Detect compose command (prioritize docker over podman)
+COMPOSE := $(shell command -v docker 2> /dev/null)
+ifdef COMPOSE
+	COMPOSE := docker compose
+else
+	COMPOSE := $(shell command -v podman 2> /dev/null)
+	ifdef COMPOSE
+		COMPOSE := podman compose
+	else
+		$(error No container runtime found. Please install Docker or Podman)
+	endif
+endif
+
+.PHONY: all help dev setup db-start db-stop db-generate db-migrate db-seed db-reset db-studio
 
 # Default target: start development environment
 all: dev
@@ -6,66 +28,51 @@ all: dev
 # Display available targets
 help:
 	@echo "Available targets:"
-	@echo "  make dev          - Start development environment"
-	@echo "  make prod         - Start production environment"
-	@echo "  make down         - Stop all containers"
-	@echo "  make down-volumes - Stop containers and remove volumes"
-	@echo "  make restart      - Restart all containers"
-	@echo "  make logs         - View container logs"
-	@echo "  make build        - Build containers"
+	@echo "  make dev          - Start development server"
+	@echo "  make setup        - Setup local environment (db-start + install + generate + migrate + seed)"
+	@echo "  make db-start     - Start PostgreSQL database (Docker)"
+	@echo "  make db-stop      - Stop PostgreSQL database"
+	@echo "  make db-generate  - Generate Prisma client"
 	@echo "  make db-migrate   - Run database migrations"
 	@echo "  make db-seed      - Seed the database"
 	@echo "  make db-reset     - Reset the database"
 	@echo "  make db-studio    - Open Prisma Studio"
 
-# Start production environment
-prod:
-	docker compose up -d nextjs-prod
-
 # Start development environment
 dev:
-	docker compose up -d nextjs-dev
+	$(PKG_MANAGER) run dev
 
-# Stop all containers
-down:
-	docker compose down
+# Start PostgreSQL database
+db-start:
+	$(COMPOSE) up -d postgres
 
-# Stop containers and remove volumes
-down-volumes:
-	docker compose down -v
+# Stop PostgreSQL database
+db-stop:
+	$(COMPOSE) stop postgres
 
-# Restart all containers
-restart:
-	docker compose restart
+# Setup local environment
+setup: db-start
+	$(PKG_MANAGER) install
+	$(PKG_MANAGER) prisma generate
+	$(PKG_MANAGER) prisma migrate dev
+	$(PKG_MANAGER) prisma db seed
 
-# View container logs (use 'make logs' or 'make logs SERVICE=nextjs-dev')
-logs:
-	@if [ -z "$(SERVICE)" ]; then \
-		docker compose logs -f; \
-	else \
-		docker compose logs -f $(SERVICE); \
-	fi
-
-# Build containers (use 'make build' or 'make build SERVICE=nextjs-dev')
-build:
-	@if [ -z "$(SERVICE)" ]; then \
-		docker compose build; \
-	else \
-		docker compose build $(SERVICE); \
-	fi
+# Generate Prisma client
+db-generate:
+	$(PKG_MANAGER) prisma generate
 
 # Run database migrations
 db-migrate:
-	docker compose exec nextjs-dev pnpm prisma migrate dev
+	$(PKG_MANAGER) prisma migrate dev
 
 # Seed the database
 db-seed:
-	docker compose exec nextjs-dev pnpm prisma db seed
+	$(PKG_MANAGER) prisma db seed
 
 # Reset the database
 db-reset:
-	docker compose exec nextjs-dev pnpm prisma migrate reset
+	$(PKG_MANAGER) prisma migrate reset
 
 # Open Prisma Studio
 db-studio:
-	docker compose exec nextjs-dev pnpm prisma studio
+	$(PKG_MANAGER) prisma studio
