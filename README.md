@@ -48,6 +48,7 @@ This will:
 - Install dependencies (using pnpm or npm)
 - Generate the Prisma client
 - Run database migrations
+- Seed the database with initial data
 
 #### 3. Start the development server
 
@@ -74,7 +75,7 @@ make help
 #### Development Commands
 
 - `make dev` - Start Next.js development server
-- `make setup` - One-command setup (db-start + install + generate + migrate)
+- `make setup` - Setup local environment (db-start + install + generate + migrate + seed)
 - `make db-start` - Start PostgreSQL database (Docker)
 - `make db-stop` - Stop PostgreSQL database
 

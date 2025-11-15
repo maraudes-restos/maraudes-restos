@@ -29,7 +29,7 @@ all: dev
 help:
 	@echo "Available targets:"
 	@echo "  make dev          - Start development server"
-	@echo "  make setup        - Setup local environment (install + db-start + generate + migrate)"
+	@echo "  make setup        - Setup local environment (db-start + install + generate + migrate + seed)"
 	@echo "  make db-start     - Start PostgreSQL database (Docker)"
 	@echo "  make db-stop      - Stop PostgreSQL database"
 	@echo "  make db-generate  - Generate Prisma client"
